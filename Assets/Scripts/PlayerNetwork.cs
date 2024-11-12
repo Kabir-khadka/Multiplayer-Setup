@@ -8,6 +8,7 @@ public class PlayerNetwork : NetworkBehaviour
 {
 
     [SerializeField] private Transform spawnedObjectPrefab;
+    private Transform spawnObjectTransform;
 
     private NetworkVariable<MyCustomData> randomNumber = new NetworkVariable<MyCustomData>(
         new MyCustomData {
@@ -46,9 +47,11 @@ public class PlayerNetwork : NetworkBehaviour
         //Creating the logic for separate movements
         if (!IsOwner) return;
 
+        //Logic for spawn
         if (Input.GetKeyDown(KeyCode.T))
         {
-            Instantiate(spawnedObjectPrefab);
+            spawnObjectTransform = Instantiate(spawnedObjectPrefab);
+            spawnObjectTransform.GetComponent<NetworkObject>().Spawn(true);
             
 
             /*
@@ -60,6 +63,13 @@ public class PlayerNetwork : NetworkBehaviour
             };*/
 
             //TestClientRpc(new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new List<ulong> { 1} } });
+        }
+
+
+        //Logic for despawn
+        if(Input.GetKeyDown(KeyCode.Y))
+        {
+            Destroy(spawnObjectTransform.gameObject);
         }
 
         //Creating direction in 3D
