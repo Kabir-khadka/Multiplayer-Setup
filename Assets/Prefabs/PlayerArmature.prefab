@@ -1039,7 +1039,7 @@ GameObject:
   - component: {fileID: 135756642000475821}
   - component: {fileID: 4416926081852918493}
   - component: {fileID: -2392010037274296543}
-  - component: {fileID: 4200970003480769929}
+  - component: {fileID: 6560541794014718883}
   m_Layer: 8
   m_Name: PlayerArmature
   m_TagString: Player
@@ -1352,7 +1352,7 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
---- !u!114 &4200970003480769929
+--- !u!114 &6560541794014718883
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
