@@ -1,4 +1,5 @@
 using QFSW.QC;
+using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
@@ -7,25 +8,33 @@ using Unity.Services.Core;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
+using System.Threading.Tasks;
 
 public class TestRelay : MonoBehaviour
 {
 
+    public static TestRelay Instance { get; private set; }
+
     //Function that signs in players anonymously.
     private async void Start()
     {
-        await UnityServices.InitializeAsync();
+      /*  await UnityServices.InitializeAsync();
 
         AuthenticationService.Instance.SignedIn += () =>
         {
             Debug.Log("Signed in" + AuthenticationService.Instance.PlayerId);
         };
 
-        await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        await AuthenticationService.Instance.SignInAnonymouslyAsync();*/
+    }
+
+    private void Awake()
+    {
+        Instance = this;
     }
 
     [Command]
-    private async void CreateRelay()
+    public async Task<string> CreateRelay()
     {
         try
         {
@@ -44,15 +53,18 @@ public class TestRelay : MonoBehaviour
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
 
             NetworkManager.Singleton.StartHost();
-       
+
+            return joinCode;
+
         } catch(RelayServiceException e)
         {
             Debug.Log(e);
+            return null;
         }
     }
 
     [Command]
-    private async void JoinRelay(string joinCode)
+    public async void JoinRelay(string joinCode)
     {
         try
         {
