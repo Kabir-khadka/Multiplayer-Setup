@@ -51,6 +51,8 @@ namespace StarterAssets
         [Tooltip("If the character is grounded or not. Not part of the CharacterController built in grounded check")]
         public bool Grounded = true;
 
+        public float LookSensitivity = 1f;
+
         [Tooltip("Useful for rough ground")]
         public float GroundedOffset = -0.14f;
 
@@ -136,7 +138,7 @@ namespace StarterAssets
         private void Start()
         {
             _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
-            
+
             _hasAnimator = TryGetComponent(out _animator);
             _controller = GetComponent<CharacterController>();
             _input = GetComponent<StarterAssetsInputs>();
@@ -182,16 +184,6 @@ namespace StarterAssets
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
         }
 
-       /* public override void OnNetworkSpawn()
-        {
-            base.OnNetworkSpawn();
-            if (IsOwner)
-            {
-                _playerInput = GetComponent<PlayerInput>();
-                _playerInput.enabled = true;
-            }
-        }*/
-
         private void GroundedCheck()
         {
             // set sphere position, with offset
@@ -203,11 +195,11 @@ namespace StarterAssets
             // update animator if using character
             if (_hasAnimator)
             {
-                if (Grounded) {
-
+                if (Grounded)
+                {
                     _animator.SetTrigger(_animIDGrounded);
                 }
-                
+
             }
         }
 
@@ -219,8 +211,8 @@ namespace StarterAssets
                 //Don't multiply mouse input by Time.deltaTime;
                 float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
 
-                _cinemachineTargetYaw += _input.look.x * deltaTimeMultiplier;
-                _cinemachineTargetPitch += _input.look.y * deltaTimeMultiplier;
+                _cinemachineTargetYaw += _input.look.x * deltaTimeMultiplier * LookSensitivity;
+                _cinemachineTargetPitch += _input.look.y * deltaTimeMultiplier * LookSensitivity;
             }
 
             // clamp our rotations so our values are limited 360 degrees
