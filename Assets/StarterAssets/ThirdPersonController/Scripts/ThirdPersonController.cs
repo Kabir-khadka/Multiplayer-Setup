@@ -90,6 +90,8 @@ namespace StarterAssets
         private float _verticalVelocity;
         private float _terminalVelocity = 53.0f;
 
+        [SerializeField] private GameObject PlayerFollowCam;
+
         // timeout deltatime
         private float _jumpTimeoutDelta;
         private float _fallTimeoutDelta;
@@ -157,6 +159,16 @@ namespace StarterAssets
             if (IsOwner)
             {
                 _playerInput.enabled = true;
+            }
+
+            // Add this block for PlayerFollowCam
+            if (IsLocalPlayer)
+            {
+                PlayerFollowCam.SetActive(true); // Enable the local player's camera
+            }
+            else
+            {
+                PlayerFollowCam.SetActive(false); // Disable the camera for other players
             }
         }
 
