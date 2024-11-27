@@ -97,6 +97,8 @@ namespace StarterAssets
         private float _fallTimeoutDelta;
 
         // animation IDs
+        private int _animIDpunching;
+        private int _animIDkicking;
         private int _animIDSpeed;
         private int _animIDGrounded;
         private int _animIDJump;
@@ -180,11 +182,34 @@ namespace StarterAssets
             JumpAndGravity();
             GroundedCheck();
             Move();
+            HandPunch();
         }
 
         private void LateUpdate()
         {
             CameraRotation();
+        }
+
+        //For triggering hand punch
+        private void HandPunch()
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (_hasAnimator)
+                {
+                    _animator.SetTrigger(_animIDpunching);
+                }
+
+                
+            }
+
+            if (Input.GetMouseButtonDown(1))
+            {
+                if (_hasAnimator)
+                {
+                    _animator.SetTrigger(_animIDkicking);
+                }
+            }
         }
 
         private void AssignAnimationIDs()
@@ -194,6 +219,8 @@ namespace StarterAssets
             _animIDJump = Animator.StringToHash("Jump");
             _animIDFreeFall = Animator.StringToHash("FreeFall");
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
+            _animIDpunching = Animator.StringToHash("HandPunch");
+            _animIDkicking = Animator.StringToHash("LegKick");
         }
 
         private void GroundedCheck()

@@ -12,12 +12,15 @@ EditorBuildSettings:
     path: Assets/Scenes/MainTest.unity
     guid: f1aaaeed8463feb4bbcb0c2dc64d570b
   - enabled: 1
+    path: Assets/Scenes/SetupTest_characSwap_v002.unity
+    guid: b2fa90e9fd8a45f4ca5c755486edd369
+  - enabled: 0
     path: Assets/Scenes/SetupTest.unity
     guid: c63dd49a6f5ba364ba601c9c6a661a3c
   - enabled: 0
     path: Assets/Scenes/Setup.unity
     guid: c6539e7fe24fa034b96dcd35419922fa
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/SetupTest_characSwap.unity
     guid: c715b1b7c38da3d45b55b6c4fe6a647e
   m_configObjects:
