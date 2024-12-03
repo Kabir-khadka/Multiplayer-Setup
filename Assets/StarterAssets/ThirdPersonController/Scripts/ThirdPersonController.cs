@@ -1,4 +1,5 @@
-﻿using Unity.Netcode;
+﻿using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM 
 using UnityEngine.InputSystem;
@@ -78,6 +79,8 @@ namespace StarterAssets
         [Tooltip("For locking the camera position on all axis")]
         public bool LockCameraPosition = false;
 
+        
+
         // cinemachine
         private float _cinemachineTargetYaw;
         private float _cinemachineTargetPitch;
@@ -91,12 +94,29 @@ namespace StarterAssets
         private float _terminalVelocity = 53.0f;
 
         [SerializeField] private GameObject PlayerFollowCam;
+        [SerializeField] private GameObject Hitbox;
+        [SerializeField] private GameObject HitboxDetector;
+        [SerializeField] private GameObject HitboxDetectorLeg;
+
+        /*private int comboStep = 0;
+        private float comboTimer = 0f;
+        private float maxComboDelay = 4.8f; // Time allowed between combo inputs
+        private float tripleClickDelay = 0.8f; // Time allowed for triple click (milliseconds)
+        private int clickCount = 0;
+        private float lastClickTime = 0f;*/
+
+        private bool isComboActive;
+        private bool isComboQueued = false; // To queue Combo2 during Combo1
+
 
         // timeout deltatime
         private float _jumpTimeoutDelta;
         private float _fallTimeoutDelta;
 
         // animation IDs
+        private int _animComboState1;
+        private int _animComboState2;
+        //private int _animComboState3;
         private int _animIDpunching;
         private int _animIDkicking;
         private int _animIDSpeed;
@@ -141,6 +161,8 @@ namespace StarterAssets
 
         private void Start()
         {
+
+            //isComboActive = false;
             _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
 
             _hasAnimator = TryGetComponent(out _animator);
@@ -163,14 +185,32 @@ namespace StarterAssets
                 _playerInput.enabled = true;
             }
 
-            // Add this block for PlayerFollowCam
-            if (IsLocalPlayer)
+            if (HitboxDetector != null)
             {
-                PlayerFollowCam.SetActive(true); // Enable the local player's camera
+                HitboxDetector.SetActive(false);
             }
-            else
+
+            if (HitboxDetectorLeg != null)
             {
-                PlayerFollowCam.SetActive(false); // Disable the camera for other players
+                HitboxDetectorLeg.SetActive(false);
+            }
+
+            if (!IsOwner)
+            {
+                if (PlayerFollowCam != null)
+                {
+                    HitboxDetector.SetActive(false);
+                    HitboxDetectorLeg.SetActive(false);
+                    PlayerFollowCam.SetActive(false); // Disable camera for non-local players
+                    Hitbox.SetActive(true);
+                }
+                return;
+            }
+
+            if (PlayerFollowCam != null)
+            {
+                PlayerFollowCam.SetActive(true); // Enable camera for the local player
+                Hitbox.SetActive(false);
             }
         }
 
@@ -183,6 +223,8 @@ namespace StarterAssets
             GroundedCheck();
             Move();
             HandPunch();
+            //ComboAttack();
+            
         }
 
         private void LateUpdate()
@@ -190,9 +232,82 @@ namespace StarterAssets
             CameraRotation();
         }
 
+
+        /*  private void ComboAttack()
+          {
+              // Check for left mouse button press and track rapid clicks
+              if (Input.GetKeyDown(KeyCode.J)) // Left mouse button input
+              {
+                  HandleRapidClicks();
+              }
+          }*/
+
+        /*  void HandleRapidClicks()
+          {
+
+                  ExecuteCombo();
+                  //clickCount = 0; // Reset click count after executing combo
+
+          }*/
+
+        /*void ExecuteCombo()
+        {
+            if (comboStep == 0 || Time.time <= comboTimer + maxComboDelay)
+            {
+                comboStep++;
+                comboTimer = Time.time;
+
+                if (comboStep == 1)
+                {
+                    _animator.SetTrigger(_animComboState1); // First punch animation 
+                } // First punch animation }
+
+
+                else if (comboStep == 2)
+                {
+                    _animator.SetTrigger(_animComboState2);// Second punch animation
+                    comboStep = 0;
+                }*/
+        // Second punch animation
+        /* else if (comboStep == 3)
+         {
+             _animator.SetTrigger(_animComboState3); // Kick animation
+             comboStep = 0; // Reset after final phase
+         }*/
+        /* }
+         else
+         {
+             comboStep = 0; // Reset if timing is missed
+         }
+     }*/
+
         //For triggering hand punch
         private void HandPunch()
         {
+            if (Input.GetMouseButtonDown(2))
+            {
+                if (_hasAnimator)
+                {
+                    _animator.SetTrigger(_animComboState1);
+                }
+
+                if (HitboxDetector != null)
+                {
+                    HitboxDetector.SetActive(true);
+                    // Schedule disabling the sphere after a short duration
+                    StartCoroutine(DisableHitboxDetectorAfterDelay(4f)); // Adjust delay as needed
+                }
+
+                if (HitboxDetectorLeg != null)
+                {
+                    HitboxDetectorLeg.SetActive(true);
+                    // Schedule disabling the sphere after a short duration
+                    StartCoroutine(DisableHitboxDetectorAfterDelay(4f)); // Adjust delay as needed
+                }
+
+
+            }
+
             if (Input.GetMouseButtonDown(0))
             {
                 if (_hasAnimator)
@@ -200,7 +315,13 @@ namespace StarterAssets
                     _animator.SetTrigger(_animIDpunching);
                 }
 
-                
+                if (HitboxDetector != null)
+                {
+                    HitboxDetector.SetActive(true);
+                    // Schedule disabling the sphere after a short duration
+                    StartCoroutine(DisableHitboxDetectorAfterDelay(0.8f)); // Adjust delay as needed
+                }
+
             }
 
             if (Input.GetMouseButtonDown(1))
@@ -209,6 +330,30 @@ namespace StarterAssets
                 {
                     _animator.SetTrigger(_animIDkicking);
                 }
+
+                if (HitboxDetectorLeg != null)
+                {
+                    HitboxDetectorLeg.SetActive(true);
+                    // Schedule disabling the sphere after a short duration
+                    StartCoroutine(DisableHitboxDetectorAfterDelay(0.8f)); // Adjust delay as needed
+                }
+               
+            }
+
+        }
+
+        private IEnumerator DisableHitboxDetectorAfterDelay(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            if (HitboxDetector != null)
+            {
+                HitboxDetector.SetActive(false);
+            }
+
+            // Disable the leg hitbox detector
+            if (HitboxDetectorLeg != null)
+            {
+                HitboxDetectorLeg.SetActive(false);
             }
         }
 
@@ -221,6 +366,9 @@ namespace StarterAssets
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
             _animIDpunching = Animator.StringToHash("HandPunch");
             _animIDkicking = Animator.StringToHash("LegKick");
+            _animComboState1 = Animator.StringToHash("Combo");
+            //_animComboState2 = Animator.StringToHash("Combo2");
+            //_animComboState3 = Animator.StringToHash("Combo3");
         }
 
         private void GroundedCheck()

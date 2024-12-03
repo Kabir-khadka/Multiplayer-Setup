@@ -5,6 +5,11 @@ TagManager:
   serializedVersion: 3
   tags:
   - CinemachineTarget
+  - PlayerWeapon
+  - HeadCollider
+  - TorsoCollider
+  - LegCollider
+  - HandCollider
   layers:
   - Default
   - TransparentFX
