@@ -10,6 +10,8 @@ public class HitDetector : NetworkBehaviour
     private float hitCooldown = 0.7f; // Cooldown duration in seconds
     private Dictionary<Collider, float> lastHitTime = new Dictionary<Collider, float>();
 
+    [SerializeField] private Transform damagePopupPrefab;
+
     private void OnTriggerEnter(Collider other)
     {
 
@@ -45,7 +47,13 @@ public class HitDetector : NetworkBehaviour
             if (rb != null && hitDetector != null)
             {
                 Debug.Log($"Hit detected by: {gameObject.name} on: {other.name}");
-                TriggerHitAnimation(other);
+                // Trigger the hit logic
+                NetworkObject targetNetworkObject = other.GetComponentInParent<NetworkObject>();
+                if (targetNetworkObject != null)
+                {
+                    ulong targetNetworkObjectId = targetNetworkObject.NetworkObjectId;
+                    TriggerHitServerRpc(targetNetworkObjectId, Random.Range(10, 50)); // Random damage value
+                }
             }
         }
 
@@ -59,7 +67,7 @@ public class HitDetector : NetworkBehaviour
         processedColliders.Clear(); // Clear the processed set
     }
 
-    // Function to handle triggering the animation
+  /*  // Function to handle triggering the animation
     private void TriggerHitAnimation(Collider other)
     {
         NetworkObject targetNetworkObject = other.GetComponentInParent<NetworkObject>();
@@ -71,10 +79,10 @@ public class HitDetector : NetworkBehaviour
 
         // Trigger the animation on the server side
         TriggerHitAnimationServerRpc(targetNetworkObject.NetworkObjectId);
-    }
+    }*/
 
     [ServerRpc(RequireOwnership = false)]
-    private void TriggerHitAnimationServerRpc(ulong targetNetworkObjectId)
+    private void TriggerHitServerRpc(ulong targetNetworkObjectId, int damageAmount)
     {
         if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(targetNetworkObjectId, out var targetNetworkObject))
         {
@@ -87,12 +95,12 @@ public class HitDetector : NetworkBehaviour
             }
 
             // Notify all clients to update the animation
-            TriggerHitAnimationClientRpc(targetNetworkObjectId);
+            TriggerHitClientRpc(targetNetworkObjectId, damageAmount);
         }
     }
 
     [ClientRpc]
-    private void TriggerHitAnimationClientRpc(ulong targetNetworkObjectId)
+    private void TriggerHitClientRpc(ulong targetNetworkObjectId, int damageAmount)
     {
         if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(targetNetworkObjectId, out var targetNetworkObject))
         {
@@ -103,6 +111,10 @@ public class HitDetector : NetworkBehaviour
                 targetAnimator.ResetTrigger("HitTorso");
                 targetAnimator.SetTrigger("HitTorso");
             }
+
+            // Spawn the damage popup on the hit player's position
+            Transform hitPlayerTransform = targetNetworkObject.transform;
+            DamagePopup.CreateAndNetworkSpawn(damagePopupPrefab, hitPlayerTransform.position, damageAmount);
         }
     }
 }

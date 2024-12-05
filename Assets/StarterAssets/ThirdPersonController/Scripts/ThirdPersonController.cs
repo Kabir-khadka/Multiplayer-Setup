@@ -98,12 +98,7 @@ namespace StarterAssets
         [SerializeField] private GameObject HitboxDetector;
         [SerializeField] private GameObject HitboxDetectorLeg;
 
-        /*private int comboStep = 0;
-        private float comboTimer = 0f;
-        private float maxComboDelay = 4.8f; // Time allowed between combo inputs
-        private float tripleClickDelay = 0.8f; // Time allowed for triple click (milliseconds)
-        private int clickCount = 0;
-        private float lastClickTime = 0f;*/
+        private bool isKicking = false;
 
         private bool isComboActive;
         private bool isComboQueued = false; // To queue Combo2 during Combo1
@@ -233,53 +228,6 @@ namespace StarterAssets
         }
 
 
-        /*  private void ComboAttack()
-          {
-              // Check for left mouse button press and track rapid clicks
-              if (Input.GetKeyDown(KeyCode.J)) // Left mouse button input
-              {
-                  HandleRapidClicks();
-              }
-          }*/
-
-        /*  void HandleRapidClicks()
-          {
-
-                  ExecuteCombo();
-                  //clickCount = 0; // Reset click count after executing combo
-
-          }*/
-
-        /*void ExecuteCombo()
-        {
-            if (comboStep == 0 || Time.time <= comboTimer + maxComboDelay)
-            {
-                comboStep++;
-                comboTimer = Time.time;
-
-                if (comboStep == 1)
-                {
-                    _animator.SetTrigger(_animComboState1); // First punch animation 
-                } // First punch animation }
-
-
-                else if (comboStep == 2)
-                {
-                    _animator.SetTrigger(_animComboState2);// Second punch animation
-                    comboStep = 0;
-                }*/
-        // Second punch animation
-        /* else if (comboStep == 3)
-         {
-             _animator.SetTrigger(_animComboState3); // Kick animation
-             comboStep = 0; // Reset after final phase
-         }*/
-        /* }
-         else
-         {
-             comboStep = 0; // Reset if timing is missed
-         }
-     }*/
 
         //For triggering hand punch
         private void HandPunch()
@@ -329,6 +277,8 @@ namespace StarterAssets
                 if (_hasAnimator)
                 {
                     _animator.SetTrigger(_animIDkicking);
+                    _animator.SetBool("isKicking", true); // Enable kicking in Animator
+                    isKicking = true; // Lock movement and rotation during kick.
                 }
 
                 if (HitboxDetectorLeg != null)
@@ -337,9 +287,22 @@ namespace StarterAssets
                     // Schedule disabling the sphere after a short duration
                     StartCoroutine(DisableHitboxDetectorAfterDelay(0.8f)); // Adjust delay as needed
                 }
+
+                //Reset the kicking state after the kick animation ends.
+                StartCoroutine(ResetKickingAfterDelay(1f)); // Duration matches kick animation length.
                
             }
 
+        }
+
+        private IEnumerator ResetKickingAfterDelay(float Delay)
+        {
+            yield return new WaitForSeconds(Delay);
+            isKicking = false; //Allow normal movement after kick ends
+            if (_hasAnimator)
+            {
+                _animator.SetBool("isKicking", false); // Disable kicking in Animator
+            }
         }
 
         private IEnumerator DisableHitboxDetectorAfterDelay(float delay)
@@ -413,6 +376,25 @@ namespace StarterAssets
 
         private void Move()
         {
+            // If kicking, restrict rotation and allow only slight forward movement 
+            if (isKicking)//if kicking is true the do below things.
+            {
+
+                //Prevent rotation
+                Vector3 currentRotation = transform.eulerAngles;
+                transform.eulerAngles = new Vector3(currentRotation.x, currentRotation.y, currentRotation.z);
+
+
+                //Allow slight forward movement
+                Vector3 limitedMovement = new Vector3(0, 0, 1).normalized * 0.5f; // Move slightly forward
+                _controller.Move(limitedMovement * (_speed * Time.deltaTime) +
+                                 new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+
+                // Skip the rest of the movement logic
+                return;
+
+            }
+
             // set target speed based on move speed, sprint speed and if sprint is pressed
             float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
 

@@ -778,7 +778,7 @@ GameObject:
   - component: {fileID: 4048214874585304559}
   - component: {fileID: 7720430729728617687}
   - component: {fileID: 1558394603987410010}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: PlayerArmature 1
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -1077,9 +1077,16 @@ MonoBehaviour:
     Layer: 0
     OriginatingState: -1071854972
     DestinationState: 830153804
-    TransitionDuration: 0.25
+    TransitionDuration: 0
     TriggerNameHash: 830153804
     TransitionIndex: 4
+  - IsCrossFadeExit: 0
+    Layer: 0
+    OriginatingState: -1071854972
+    DestinationState: 315129407
+    TransitionDuration: 0.1
+    TriggerNameHash: 1895636814
+    TransitionIndex: 5
   - IsCrossFadeExit: 0
     Layer: 0
     OriginatingState: 861170204
@@ -2861,6 +2868,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  damagePopupPrefab: {fileID: 779542280820842096, guid: dd6c45727b918cf429cc1d1d8850e638, type: 3}
 --- !u!54 &4312755578497989320
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -8216,6 +8224,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  damagePopupPrefab: {fileID: 779542280820842096, guid: dd6c45727b918cf429cc1d1d8850e638, type: 3}
 --- !u!1 &7785144480764541574
 GameObject:
   m_ObjectHideFlags: 0
