@@ -99,6 +99,7 @@ namespace StarterAssets
         [SerializeField] private GameObject HitboxDetectorLeg;
 
         private bool isKicking = false;
+        private bool isPunching = false;
 
         private bool isComboActive;
         private bool isComboQueued = false; // To queue Combo2 during Combo1
@@ -261,6 +262,8 @@ namespace StarterAssets
                 if (_hasAnimator)
                 {
                     _animator.SetTrigger(_animIDpunching);
+                    _animator.SetBool("isPunching", true);//Enable punching in animator
+                    isPunching = true; //Lock movement and rotation during punching.
                 }
 
                 if (HitboxDetector != null)
@@ -269,6 +272,9 @@ namespace StarterAssets
                     // Schedule disabling the sphere after a short duration
                     StartCoroutine(DisableHitboxDetectorAfterDelay(0.8f)); // Adjust delay as needed
                 }
+
+                //Now after the punching is done we have to reset the punching state.
+                StartCoroutine(ResetPunchingAfterDelay(0.8f));
 
             }
 
@@ -293,6 +299,16 @@ namespace StarterAssets
                
             }
 
+        }
+
+        private IEnumerator ResetPunchingAfterDelay(float Delay)
+        {
+            yield return new WaitForSeconds(Delay);
+            isPunching = false;
+            if (_hasAnimator)
+            {
+                _animator.SetBool("isPunching", false); //Disable punching in animation.
+            }
         }
 
         private IEnumerator ResetKickingAfterDelay(float Delay)
@@ -376,8 +392,8 @@ namespace StarterAssets
 
         private void Move()
         {
-            // If kicking, restrict rotation and allow only slight forward movement 
-            if (isKicking)//if kicking is true the do below things.
+            // If kicking/punching, restrict rotation and allow only slight forward movement 
+            if (isKicking || isPunching)//if kicking/punching is true the do below things.
             {
 
                 //Prevent rotation
@@ -482,16 +498,17 @@ namespace StarterAssets
                 }
 
                 // Jump
-                if (_input.jump && _jumpTimeoutDelta <= 0.0f)
+                if (Grounded && _input.jump && _jumpTimeoutDelta <= 0.0f)
                 {
-                    // the square root of H * -2 * G = how much velocity needed to reach desired height
                     _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
-
-                    // update animator if using character
+                    _jumpTimeoutDelta = JumpTimeout; // Reset jump timeout
                     if (_hasAnimator)
                     {
                         _animator.SetBool(_animIDJump, true);
                     }
+
+                    // Reset jump input after initiating the jump
+                    _input.jump = false; // Fix: Prevent repeated jump triggers
                 }
 
                 // jump timeout
@@ -528,6 +545,9 @@ namespace StarterAssets
             {
                 _verticalVelocity += Gravity * Time.deltaTime;
             }
+
+            // Apply vertical velocity to the player's Y position
+            transform.position += new Vector3(0, _verticalVelocity * Time.deltaTime, 0);
         }
 
         private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
