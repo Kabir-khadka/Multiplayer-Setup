@@ -540,9 +540,15 @@ namespace StarterAssets
                 _input.jump = false;
             }
 
-            // apply gravity over time if under terminal (multiply by delta time twice to linearly speed up over time)
-            if (_verticalVelocity < _terminalVelocity)
+            // If the player is falling, apply additional gravity
+            if (_verticalVelocity < 0)
             {
+                float fallMultiplier = 2.0f; // Increase this to apply stronger gravity while falling
+                _verticalVelocity += Gravity * fallMultiplier * Time.deltaTime;
+            }
+            else
+            {
+                // Apply normal gravity when ascending
                 _verticalVelocity += Gravity * Time.deltaTime;
             }
 
